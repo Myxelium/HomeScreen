@@ -1,0 +1,13 @@
+﻿services:
+  homeapi:
+    image: homeapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  homeapi-1:
+    image: homeapi-1
+    build:
+      context: .
+      dockerfile: HomeApi/Dockerfile
+
