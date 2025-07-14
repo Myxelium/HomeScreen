@@ -1,10 +1,8 @@
-namespace HomeApi.Models;
-
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-public class AuroraForecast
+namespace HomeApi.Models.Response;
+
+public class AuroraForecastApiResponse
 {
     [JsonPropertyName("date")]
     public DateTime Date { get; set; }

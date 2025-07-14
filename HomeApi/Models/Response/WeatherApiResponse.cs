@@ -1,3 +1,5 @@
+namespace HomeApi.Models.Response;
+
 public class WeatherData
 {
     public Location Location { get; set; }
