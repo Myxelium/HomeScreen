@@ -12,7 +12,18 @@ public class HomeController(IMediator mediator) : ControllerBase
     [HttpGet(Name = "GetHome")]
     public async Task<ActionResult<WeatherInformation>> Get()
     {
-        var result = await mediator.Send(new GetWeather.Command());
-        return Ok(result);
+        return Ok(await mediator.Send(new Weather.Command()));
+    }
+    
+    [HttpGet("default.png")]
+    public async Task<IActionResult> GetImage()
+    {
+        return File(await mediator.Send(new ImageGeneration.Command()), "image/png");
+    }
+    
+    [HttpGet("departureboard")]
+    public async Task<ActionResult<List<TimeTable>>> GetDepartureBoard()
+    {
+        return Ok(await mediator.Send(new DepartureBoard.Command()));
     }
 }

@@ -126,4 +126,22 @@ public static class ContractExtensions
         };
     }
     
+    public static List<TimeTable>? ToContract(this TrafikLabsApiResponse response)
+    {
+        if (response?.Departure is null)
+            return [];
+
+        return response.Departure.Select(dep => new TimeTable
+        {
+            LineNumber = dep.ProductAtStop?.DisplayNumber ?? dep.ProductAtStop?.Line,
+            LineName = dep.ProductAtStop?.Name,
+            TransportType = dep.ProductAtStop?.CatOutL,
+            Operator = dep.ProductAtStop?.Operator,
+            StopName = dep.Stop,
+            DepartureTime = $"{dep.Date} {dep.Time}",
+            Direction = dep.Direction,
+            JourneyDetailRef = dep.JourneyDetailRef?.Ref,
+            Notes = dep.Notes?.Note?.Select(n => n.Value).ToList() ?? []
+        }).ToList();
+    }
 }

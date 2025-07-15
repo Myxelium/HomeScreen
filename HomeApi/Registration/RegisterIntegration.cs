@@ -28,7 +28,11 @@ public static class RegisterIntegration
 
         services.AddRefitClient<IWeatherClient>()
             .ConfigureBaseAddress(apiConfiguration => apiConfiguration.BaseUrls.Weather);
+        
+        services.AddRefitClient<IResRobotClient>()
+            .ConfigureBaseAddress(apiConfiguration => apiConfiguration.BaseUrls.ResRobot);
 
+        services.AddScoped<IDepartureBoardService, DepartureBoardService>();
         services.AddScoped<IGeocodingService, GeocodingService>();
         services.AddScoped<IAuroraService, AuroraService>();
         services.AddScoped<IWeatherService, WeatherService>();

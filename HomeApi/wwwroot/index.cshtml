@@ -1,0 +1,212 @@
+@model HomeApi.Models.Image
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Weather Dashboard</title>
+    <style>
+        html, body {
+            width: 800px;
+            height: 480px;
+            margin: 0;
+            padding: 0;
+            background: #f0f4f8;
+            color: #333;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+            overflow: hidden;
+            font-size: 13px;
+        }
+        .section {
+            margin-bottom: 6px;
+            padding: 4px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            flex: 1;
+            font-size: 12px;
+        }
+        .scroll {
+            max-height: 140px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            padding: 2px 4px;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        th {
+            background: #e8eef3;
+            font-weight: bold;
+        }
+        img.icon {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="section">
+        <h2 style="font-size:16px;">@Model.Weather.CityName</h2>
+        <div class="flex-row">
+            Current Weather
+            <table>
+                <thead>
+                <tr>
+                    <th>Temp</th>
+                    <th>Feels</th>
+                    <th>Clouds</th>
+                    <th>Wind</th>
+                    <th>Gusts</th>
+                    <th>Updated</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>@Model.Weather.Current.Temperature °C</td>
+                    <td>@Model.Weather.Current.Feelslike °C</td>
+                    <td>@Model.Weather.Current.Cloud%</td>
+                    <td>@Model.Weather.Current.WindPerMeterSecond m/s (@Model.Weather.Current.WindDirection)</td>
+                    <td>@Model.Weather.Current.WindGustPerMeterSecond m/s</td>
+                    <td>@Model.Weather.Current.LastUpdated</td>
+                </tr>
+                </tbody>
+            </table>
+            <br/>
+            Current Air Quality
+            <table>
+                <thead>
+                <tr>
+                    <th>CO</th>
+                    <th>NO₂</th>
+                    <th>O₃</th>
+                    <th>SO₂</th>
+                    <th>PM2.5</th>
+                    <th>PM10</th>
+                    <th>EPA</th>
+                    <th>DEFRA</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>@Model.Weather.Current.AirQuality?.Co</td>
+                    <td>@Model.Weather.Current.AirQuality?.No2</td>
+                    <td>@Model.Weather.Current.AirQuality?.O3</td>
+                    <td>@Model.Weather.Current.AirQuality?.So2</td>
+                    <td>@Model.Weather.Current.AirQuality?.Pm2_5</td>
+                    <td>@Model.Weather.Current.AirQuality?.Pm10</td>
+                    <td>@Model.Weather.Current.AirQuality?.Us_Epa_Index</td>
+                    <td>@Model.Weather.Current.AirQuality?.Gb_Defra_Index</td>
+                </tr>
+                </tbody>
+            </table>
+            <br/>
+            Aurora Probability
+            <table>
+            <thead>
+            <tr>
+                <th>Probability</th>
+                <th>Color</th>
+                <th>Highest</th>
+                <th>Location</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>@Model.Weather.Current.AuroraProbability?.Value%</td>
+                <td>@Model.Weather.Current.AuroraProbability?.Colour</td>
+                <td>@Model.Weather.Current.AuroraProbability?.HighestProbability?.Value%</td>
+                <td>(@Model.Weather.Current.AuroraProbability?.HighestProbability?.Lat, @Model.Weather.Current.AuroraProbability?.HighestProbability?.Long)</td>
+                <td>@Model.Weather.Current.AuroraProbability?.HighestProbability?.Date.ToShortDateString()</td>
+            </tr>
+            </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="section scroll">
+        <h3 style="font-size:14px;">Forecast</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Icon</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                    <th>Day</th>
+                    <th>Feels</th>
+                    <th>Rain</th>
+                    <th>Snow</th>
+                    <th>Sunrise</th>
+                    <th>Sunset</th>
+                    <th>Moonrise</th>
+                    <th>Moonset</th>
+                    <th>Moon</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var f in Model.Weather.Forecast)
+                {
+                    <tr>
+                        <td>@f.Date</td>
+                        <td><img class="icon" src="@f.DayIcon" alt="Icon" /></td>
+                        <td>@f.MinTempC°C</td>
+                        <td>@f.MaxTempC°C</td>
+                        <td>@f.Day?.ConditionText</td>
+                        <td>@f.Day?.AvgFeelslikeC°C</td>
+                        <td>@f.Day?.TotalChanceOfRain%</td>
+                        <td>@f.Day?.TotalChanceOfSnow%</td>
+                        <td>@f.Astro.Sunrise</td>
+                        <td>@f.Astro.Sunset</td>
+                        <td>@f.Astro.Moonrise</td>
+                        <td>@f.Astro.Moonset</td>
+                        <td>@f.Astro.Moon_Phase (@f.Astro.Moon_Illumination%)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section scroll">
+        <h3 style="font-size:14px;">Public Transport Departures</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Line</th>
+                    <th>Name</th>
+                    <th>Operator</th>
+                    <th>Stop</th>
+                    <th>Departure</th>
+                    <th>Direction</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.TimeTable)
+                {
+                    <tr>
+                        <td>@t.TransportType</td>
+                        <td>@t.LineNumber</td>
+                        <td>@t.LineName</td>
+                        <td>@t.Operator</td>
+                        <td>@t.StopName</td>
+                        <td>@t.DepartureTime</td>
+                        <td>@t.Direction</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
