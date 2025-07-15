@@ -1,11 +1,13 @@
 using System.Reflection;
-using HomeApi.Models;
 using HomeApi.Models.Configuration;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 using PuppeteerSharp;
 using RazorLight;
+using SixLabors.ImageSharp.Formats.Bmp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace HomeApi.Handlers;
 
@@ -32,7 +34,7 @@ public static class ImageGeneration
             var weather = await _mediator.Send(new Weather.Command(), cancellationToken);
             var departureBoard = await _mediator.Send(new DepartureBoard.Command(), cancellationToken);
             
-            var model = new Image
+            var model = new Models.Image
             {
                 Weather = weather,
                 TimeTable = departureBoard
@@ -69,7 +71,55 @@ public static class ImageGeneration
             });
             await page.SetContentAsync(htmlContent, new NavigationOptions { WaitUntil = new[] { WaitUntilNavigation.Networkidle0 } });
             var stream = await page.ScreenshotStreamAsync(new ScreenshotOptions { Type = ScreenshotType.Png });
-            return stream;
+
+            return await stream.ToBmpStream();
         }
+    }
+
+    private static async Task<Stream> ToBmpStream(this Stream stream)
+    {
+        var image = await Image.LoadAsync<Rgba32>(stream);
+        // Resize or crop to 800x480 if necessary
+        image.Mutate(x => x.Resize(800, 480));
+
+        // Reduce to 3-color e-paper palette
+        image.ProcessPixelRows(accessor =>
+        {
+            for (int y = 0; y < accessor.Height; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    var pixel = row[x];
+
+                    // Compute perceived brightness (gray)
+                    float brightness = 0.299f * pixel.R + 0.587f * pixel.G + 0.114f * pixel.B;
+
+                    if (pixel.R > 150 && pixel.G < 80 && pixel.B < 80) // RED threshold
+                    {
+                        row[x] = new Rgba32(255, 0, 0); // Red
+                    }
+                    else if (brightness > 180)
+                    {
+                        row[x] = new Rgba32(255, 255, 255); // White
+                    }
+                    else
+                    {
+                        row[x] = new Rgba32(0, 0, 0); // Black
+                    }
+                }
+            }
+        });
+
+        var bmpStream = new MemoryStream();
+        var bmpEncoder = new BmpEncoder
+        {
+            BitsPerPixel = BmpBitsPerPixel.Pixel24
+        };
+
+        await image.SaveAsync(bmpStream, bmpEncoder);
+        bmpStream.Position = 0;
+
+        return bmpStream;
     }
 }
