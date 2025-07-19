@@ -11,4 +11,5 @@ public class TimeTable
     public string Direction { get; set; }           // e.g. "Farsta Strand station"
     public string JourneyDetailRef { get; set; }    // e.g. "1|39437|0|1|15072025"
     public List<string> Notes { get; set; }         // e.g. "Pendeltåg", "Endast 2 klass"
+    public string InternalTransportationName { get; set; } // e.g. "Pendeltåg 43"
 }

@@ -53,6 +53,8 @@ public static class ContractExtensions
                     So2 = weather.Current.Air_Quality.So2, // Sulfur Dioxide
                     Pm10 = weather.Current.Air_Quality.Pm10, // Particulate Matter 10 micrometers or less
                     Pm2_5 = weather.Current.Air_Quality.Pm2_5, // Particulate Matter 2.5 micrometers or less
+                    Us_Epa_Index = weather.Current.Air_Quality.Us_Epa_Index, // US EPA Air Quality Index
+                    Gb_Defra_Index = weather.Current.Air_Quality.Gb_Defra_Index, // UK DEFRA Air Quality Index
                 },
                 AuroraProbability = new Probability
                 {
@@ -96,6 +98,8 @@ public static class ContractExtensions
             MaxTempC = day.Day.Maxtemp_C,
             MinTempC = day.Day.Mintemp_C,
             DayIcon = day.Day.Condition.Icon,
+            IconCode = day.Day.Condition.Code,
+            ChanceOfRain = day.Day.Daily_Chance_Of_Rain,
             Astro = new Models.Astro
             {
                 Moon_Illumination = day.Astro.Moon_Illumination,
@@ -141,7 +145,8 @@ public static class ContractExtensions
             DepartureTime = $"{dep.Date} {dep.Time}",
             Direction = dep.Direction,
             JourneyDetailRef = dep.JourneyDetailRef?.Ref,
-            Notes = dep.Notes?.Note?.Select(n => n.Value).ToList() ?? []
+            Notes = dep.Notes?.Note?.Select(n => n.Value).ToList() ?? [],
+            InternalTransportationName = dep.ProductAtStop?.InternalName
         }).ToList();
     }
 }

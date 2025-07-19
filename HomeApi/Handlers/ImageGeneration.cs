@@ -1,3 +1,4 @@
+using System.Dynamic;
 using System.Reflection;
 using HomeApi.Models.Configuration;
 using MediatR;
@@ -43,13 +44,17 @@ public static class ImageGeneration
             if(weather is null)
                 throw new Exception("Weather data not found");
             
-            var engine = new RazorLightEngineBuilder().SetOperatingAssembly(Assembly.GetExecutingAssembly())
-                .UseEmbeddedResourcesProject(typeof(ImageGeneration)).UseMemoryCachingProvider().Build();
-            var path = Path.Combine(_env.WebRootPath, "index.cshtml");
+            var engine = new RazorLightEngineBuilder()
+                .SetOperatingAssembly(Assembly.GetExecutingAssembly())
+                .UseEmbeddedResourcesProject(typeof(ImageGeneration))
+                .UseMemoryCachingProvider()
+                .Build();
             
-            var template = await File.ReadAllTextAsync(path);
+            var path = Path.Combine(_env.WebRootPath, "index.cshtml");
 
-            var result = await engine.CompileRenderStringAsync("templateKey", template, model);
+            var template = await File.ReadAllTextAsync(path, cancellationToken);
+
+            var result = await engine.CompileRenderStringAsync("templateKey", template, model, viewBag: new ExpandoObject());
 
             return await CreateImage(result);
         }
@@ -85,15 +90,15 @@ public static class ImageGeneration
         // Reduce to 3-color e-paper palette
         image.ProcessPixelRows(accessor =>
         {
-            for (int y = 0; y < accessor.Height; y++)
+            for (var y = 0; y < accessor.Height; y++)
             {
                 var row = accessor.GetRowSpan(y);
-                for (int x = 0; x < row.Length; x++)
+                for (var x = 0; x < row.Length; x++)
                 {
                     var pixel = row[x];
 
                     // Compute perceived brightness (gray)
-                    float brightness = 0.299f * pixel.R + 0.587f * pixel.G + 0.114f * pixel.B;
+                    var brightness = 0.299f * pixel.R + 0.587f * pixel.G + 0.114f * pixel.B;
 
                     if (pixel.R > 150 && pixel.G < 80 && pixel.B < 80) // RED threshold
                     {

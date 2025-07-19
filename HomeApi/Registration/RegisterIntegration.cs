@@ -1,6 +1,7 @@
 using HomeApi.Extensions;
 using HomeApi.Integration;
 using HomeApi.Integration.Client;
+using HomeApi.Integration.Client.WeatherClient;
 using HomeApi.Models.Configuration;
 using Microsoft.Extensions.Options;
 using Refit;
