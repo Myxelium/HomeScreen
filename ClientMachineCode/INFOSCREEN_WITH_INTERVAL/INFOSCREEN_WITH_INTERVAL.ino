@@ -7,7 +7,7 @@
 #include <ArduinoJson.h>
 #include <JPEGDEC.h>
 
-// WiFi credentials
+// WiFi credentials (only 2.4ghz)
 const char* ssid = "x";
 const char* password = "x";
 
@@ -23,16 +23,12 @@ uint64_t sleepDuration = 30e6; // Default 30 seconds in microseconds
 #define EPD_HEIGHT EPD_7IN5B_V2_HEIGHT
 
 // =========== IMAGE TUNING PARAMETERS ===========
-// Basic color thresholds
-#define BLACK_TEXT_THRESHOLD 190  // rgb(51,51,51) should be detected as black
-
-// Dithering settings - NEW
-#define ENABLE_DITHERING true     // Set to false to disable dithering
-#define DITHER_STRENGTH 8        // Lower values = stronger dithering (8-32)
-
-// Contrast settings - NEW
-#define ENHANCE_CONTRAST true     // Set to false to disable contrast enhancement
-#define CONTRAST_LEVEL 30         // Contrast adjustment level (0-100)
+// These will be updated from the configuration
+uint8_t blackTextThreshold = 190;  // Default (0-255)
+bool enableDithering = true;       // Default
+uint8_t ditherStrength = 8;        // Default (8-32)
+bool enhanceContrast = true;       // Default
+uint8_t contrastLevel = 30;        // Default (0-100)
 // ===============================================
 
 // Framebuffers for black and red layers
@@ -48,9 +44,9 @@ JPEGDEC jpeg;
 
 // Apply contrast adjustment to RGB values
 void adjustContrast(uint8_t *r, uint8_t *g, uint8_t *b) {
-  if (!ENHANCE_CONTRAST) return;
+  if (!enhanceContrast) return;
   
-  float contrast = (CONTRAST_LEVEL / 100.0) + 1.0;  // Convert to decimal & shift range: [0..2]
+  float contrast = (contrastLevel / 100.0) + 1.0;  // Convert to decimal & shift range: [0..2]
   float intercept = 128 * (1 - contrast);
   
   *r = constrain((*r * contrast) + intercept, 0, 255);
@@ -68,7 +64,7 @@ int jpegDrawCallback(JPEGDRAW *pDraw) {
   int height = pDraw->iHeight;
   
   // Initialize error buffers for dithering if needed
-  if (ENABLE_DITHERING && errorR == NULL) {
+  if (enableDithering && errorR == NULL) {
     errorR = (int16_t*)malloc(EPD_WIDTH * sizeof(int16_t));
     errorG = (int16_t*)malloc(EPD_WIDTH * sizeof(int16_t));
     errorB = (int16_t*)malloc(EPD_WIDTH * sizeof(int16_t));
@@ -89,7 +85,7 @@ int jpegDrawCallback(JPEGDRAW *pDraw) {
   // Process each row in this MCU block
   for (int iy = 0; iy < height; iy++) {
     // Reset error buffers for each row
-    if (ENABLE_DITHERING && errorR != NULL) {
+    if (enableDithering && errorR != NULL) {
       memset(errorR, 0, EPD_WIDTH * sizeof(int16_t));
       memset(errorG, 0, EPD_WIDTH * sizeof(int16_t));
       memset(errorB, 0, EPD_WIDTH * sizeof(int16_t));
@@ -112,15 +108,15 @@ int jpegDrawCallback(JPEGDRAW *pDraw) {
       uint8_t b = (pixel & 0x1F) << 3;
       
       // Apply contrast adjustment if enabled
-      if (ENHANCE_CONTRAST) {
+      if (enhanceContrast) {
         adjustContrast(&r, &g, &b);
       }
       
       // Apply dithering errors if enabled
-      if (ENABLE_DITHERING && errorR != NULL) {
-        r = constrain(r + (errorR[pos_x] / DITHER_STRENGTH), 0, 255);
-        g = constrain(g + (errorG[pos_x] / DITHER_STRENGTH), 0, 255);
-        b = constrain(b + (errorB[pos_x] / DITHER_STRENGTH), 0, 255);
+      if (enableDithering && errorR != NULL) {
+        r = constrain(r + (errorR[pos_x] / ditherStrength), 0, 255);
+        g = constrain(g + (errorG[pos_x] / ditherStrength), 0, 255);
+        b = constrain(b + (errorB[pos_x] / ditherStrength), 0, 255);
       }
       
       // Calculate grayscale value
@@ -138,7 +134,7 @@ int jpegDrawCallback(JPEGDRAW *pDraw) {
         finalColor = 2;  // Red
       }
       // If not red, determine if it's black or white based on grayscale
-      else if (gray < BLACK_TEXT_THRESHOLD) {
+      else if (gray < blackTextThreshold) {
         finalColor = 0;  // Black
       }
       else {
@@ -162,7 +158,7 @@ int jpegDrawCallback(JPEGDRAW *pDraw) {
       }
       
       // Calculate and distribute dithering errors
-      if (ENABLE_DITHERING && errorR != NULL) {
+      if (enableDithering && errorR != NULL) {
         int16_t err_r = r - targetR;
         int16_t err_g = g - targetG;
         int16_t err_b = b - targetB;
@@ -235,6 +231,12 @@ void setup() {
     while(1); // Halt if memory allocation fails
   }
   
+  // Initialize e-ink display exactly as in Waveshare example
+  DEV_Module_Init();
+  EPD_7IN5B_V2_Init();
+  // EPD_7IN5B_V2_Clear();
+  DEV_Delay_ms(500);
+
   // Initialize the Paint library with the buffers
   Paint_NewImage(BlackImage, EPD_WIDTH, EPD_HEIGHT, 0, WHITE);
   Paint_NewImage(RYImage, EPD_WIDTH, EPD_HEIGHT, 0, WHITE);
@@ -277,7 +279,7 @@ void setup() {
     Serial.println("Server connectivity test failed - skipping image fetch");
   }
 
-  // Free dithering buffers if allocated - NEW
+  // Free dithering buffers if allocated
   if (errorR) free(errorR);
   if (errorG) free(errorG);
   if (errorB) free(errorB);
@@ -338,8 +340,8 @@ bool fetchConnectionInformation() {
       Serial.println(jsonPayload);
       Serial.println("-----EXTRACTED JSON END-----");
       
-      // Deserialize the JSON document
-      StaticJsonDocument<512> doc;
+      // Deserialize the JSON document - Increased buffer size for more parameters
+      StaticJsonDocument<768> doc;
       DeserializationError error = deserializeJson(doc, jsonPayload);
       if (error) {
         Serial.print("JSON parsing failed: ");
@@ -368,6 +370,37 @@ bool fetchConnectionInformation() {
       } else {
         Serial.println("Warning: updateIntervalMinutes not found in JSON");
         // Keep default sleep duration
+      }
+      
+      // Extract new image processing parameters
+      if (doc.containsKey("blackTextThreshold")) {
+        blackTextThreshold = doc["blackTextThreshold"].as<uint8_t>();
+        Serial.print("Black text threshold set to: ");
+        Serial.println(blackTextThreshold);
+      }
+      
+      if (doc.containsKey("enableDithering")) {
+        enableDithering = doc["enableDithering"].as<bool>();
+        Serial.print("Dithering enabled: ");
+        Serial.println(enableDithering ? "true" : "false");
+      }
+      
+      if (doc.containsKey("ditheringStrength")) {
+        ditherStrength = doc["ditheringStrength"].as<uint8_t>();
+        Serial.print("Dithering strength set to: ");
+        Serial.println(ditherStrength);
+      }
+      
+      if (doc.containsKey("enhanceContrast")) {
+        enhanceContrast = doc["enhanceContrast"].as<bool>();
+        Serial.print("Contrast enhancement enabled: ");
+        Serial.println(enhanceContrast ? "true" : "false");
+      }
+      
+      if (doc.containsKey("contrastStrength")) {
+        contrastLevel = doc["contrastStrength"].as<uint8_t>();
+        Serial.print("Contrast level set to: ");
+        Serial.println(contrastLevel);
       }
       
       http.end();
@@ -479,12 +512,6 @@ void fetchAndDisplayImage() {
             
             // Close the file
             jpeg.close();
-
-            // Initialize e-ink display exactly as in Waveshare example
-            DEV_Module_Init();
-            EPD_7IN5B_V2_Init();
-            EPD_7IN5B_V2_Clear();
-            DEV_Delay_ms(500);
             
             // Display the processed image - using Waveshare's function
             Serial.println("Sending image to display...");
