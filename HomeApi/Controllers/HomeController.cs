@@ -6,35 +6,28 @@ using Microsoft.AspNetCore.Mvc;
 namespace HomeApi.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("home")]
 public class HomeController(IMediator mediator) : ControllerBase
 {
-    [HttpGet(Name = "GetHome")]
+    [HttpGet(Name = "getHome")]
     public async Task<ActionResult<WeatherInformation>> Get()
     {
         return Ok(await mediator.Send(new Weather.Command()));
     }
     
-    [HttpGet("default.bmp")]
+    [HttpGet("default.jpg")]
     public async Task<IActionResult> GetImage()
     {
-        return File(await mediator.Send(new ImageGeneration.Command()), "image/bmp");
+        return File(await mediator.Send(new ImageGeneration.Command()), "image/jpeg");
     }
     
-    /*[HttpGet("screen/buffers")]
-    public async Task<IActionResult> GetCombinedBuffers()
+    [HttpGet("configuration")]
+    public async Task<ActionResult<MicroProcessorConfiguration>> GetCombinedBuffers()
     {
-        var (black, red) = await mediator.Send(new ImageGeneration.Command());
-
-        // Combine buffers
-        byte[] combined = new byte[black.Length + red.Length];
-        Buffer.BlockCopy(black, 0, combined, 0, black.Length);
-        Buffer.BlockCopy(red, 0, combined, black.Length, red.Length);
-
-        return File(combined, "application/octet-stream");
-    }*/
+        return Ok(await mediator.Send(new Configuration.Command()));
+    }
     
-    [HttpGet("departureboard")]
+    [HttpGet("departure-board")]
     public async Task<ActionResult<List<TimeTable>>> GetDepartureBoard()
     {
         return Ok(await mediator.Send(new DepartureBoard.Command()));

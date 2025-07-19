@@ -122,6 +122,11 @@
 
         return map.TryGetValue(code, out var value) ? value : "fa-question-circle";
     }
+    
+    private static string UseHighContrast(bool isHighContrast)
+    {
+        return isHighContrast ? "high-contrast" : string.Empty;
+    }
 }
 
 <!DOCTYPE html>
@@ -143,6 +148,11 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
+        .high-contrast * {
+            color: hsl(0 0% 0%) !important;
+            border-color:  hsl(0 0% 0%) !important;
+        }
+        
         /* Color Variables */
         :root {
             /* Base colors - Grayscale */
@@ -205,7 +215,7 @@
         }
 
         .location-icon {
-            color: hsl(0 85% 60%);
+            color: hsl(0 85% 60%) !important;
             font-size: 14px;
         }
 
@@ -256,24 +266,24 @@
         }
 
         .cloud-icon {
-            color: hsl(var(--weather-cloudy));
+            color: hsl(var(--weather-cloudy)) !important;
         }
 
         .wind-icon, .activity-icon {
-            color: hsl(0 85% 60%);
+            color: hsl(0 85% 60%) !important;
         }
 
         .aurora-icon {
-            color: hsl(var(--weather-aurora));
+            color: hsl(var(--weather-aurora)) !important;
         }
 
         .air-quality-badge {
             background: hsl(var(--air-good));
-            color: white;
+            color: hsl(0, 0%, 100%) !important;
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: bolder;
             text-align: center;
         }
 
@@ -317,7 +327,7 @@
             display: flex;
             justify-content: center;
             margin: 4px 0;
-            color: hsl(var(--weather));
+            color: hsl(var(--weather)) !important;
         }
 
         .forecast-condition {
@@ -383,11 +393,11 @@
         }
 
         .sunrise-icon, .sunset-icon {
-            color: hsl(0 85% 60%);
+            color: hsl(0 85% 60%) !important;
         }
 
         .moon-icon {
-            color: hsl(0 85% 60%);
+            color: hsl(0 85% 60%) !important;
         }
 
         /* Right Column - Transport */
@@ -425,7 +435,7 @@
         }
 
         .transport-color {
-            color: hsl(var(--transport-color));
+            color: hsl(var(--transport-color)) !important;
         }
 
         .transport-info {
@@ -472,144 +482,144 @@
     </style>
 </head>
 <body>
-    <div class="weather-card">
-        <!-- Left Column - Current Weather -->
-        <div class="current-weather">
-            <div class="location">
-                <i class="fas fa-map-marker-alt location-icon"></i>
-                <span class="location-text">@Model.Weather.CityName</span>
+<div class="weather-card @UseHighContrast(ViewBag.IsHighContrast)">
+    <!-- Left Column - Current Weather -->
+    <div class="current-weather">
+        <div class="location">
+            <i class="fas fa-map-marker-alt location-icon"></i>
+            <span class="location-text">@Model.Weather.CityName</span>
+        </div>
+
+        <div class="current-temp">
+            <div class="temp-main">@Model.Weather.Current.Temperature°C</div>
+            <div class="feels-like">Feels like @Model.Weather.Current.Feelslike°C</div>
+        </div>
+
+        <div class="weather-details">
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-cloud cloud-icon"></i>
+                    <span>Clouds</span>
+                </div>
+                <span class="detail-value">@Model.Weather.Current.Cloud%</span>
             </div>
-            
-            <div class="current-temp">
-                <div class="temp-main">@Model.Weather.Current.Temperature°C</div>
-                <div class="feels-like">Feels like @Model.Weather.Current.Feelslike°C</div>
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-wind wind-icon"></i>
+                    <span>Wind</span>
+                </div>
+                <span class="detail-value">@Model.Weather.Current.WindPerMeterSecond.ToString("0.##"); m/s @Model.Weather.Current.WindDirection</span>
             </div>
-            
-            <div class="weather-details">
-                <div class="detail-item">
-                    <div class="detail-label">
-                        <i class="fas fa-cloud cloud-icon"></i>
-                        <span>Clouds</span>
-                    </div>
-                    <span class="detail-value">@Model.Weather.Current.Cloud%</span>
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-chart-line activity-icon"></i>
+                    <span>Gusts</span>
                 </div>
-                
-                <div class="detail-item">
-                    <div class="detail-label">
-                        <i class="fas fa-wind wind-icon"></i>
-                        <span>Wind</span>
-                    </div>
-                    <span class="detail-value">@Model.Weather.Current.WindPerMeterSecond.ToString("0.##"); m/s @Model.Weather.Current.WindDirection</span>
-                </div>
-                
-                <div class="detail-item">
-                    <div class="detail-label">
-                        <i class="fas fa-chart-line activity-icon"></i>
-                        <span>Gusts</span>
-                    </div>
-                    <span class="detail-value">@Model.Weather.Current.WindGustPerMeterSecond.ToString("0.##"); m/s</span>
-                </div>
-                
-                <div class="detail-item">
-                    <div class="detail-label">
-                        <i class="fas fa-star aurora-icon"></i>
-                        <span>Aurora</span>
-                    </div>
-                    <span class="detail-value">@Model.Weather.Current.AuroraProbability.Value%</span>
-                </div>
+                <span class="detail-value">@Model.Weather.Current.WindGustPerMeterSecond.ToString("0.##"); m/s</span>
             </div>
-            
-            <div class="air-quality-badge">
-                Air Quality: @GetAirQualityStatus(Model.Weather.Current.AirQuality)
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-star aurora-icon"></i>
+                    <span>Aurora</span>
+                </div>
+                <span class="detail-value">@Model.Weather.Current.AuroraProbability.Value%</span>
             </div>
         </div>
-        
-        <!-- Middle Column - Forecast -->
-        <div class="forecast-section">
-            <h3 class="section-title">@Model.Weather.Forecast.Count-Day Forecast</h3>
-            
-            <div class="forecast-grid">
+
+        <div class="air-quality-badge">
+            Air Quality: @GetAirQualityStatus(Model.Weather.Current.AirQuality)
+        </div>
+    </div>
+
+    <!-- Middle Column - Forecast -->
+    <div class="forecast-section">
+        <h3 class="section-title">@Model.Weather.Forecast.Count-Day Forecast</h3>
+
+        <div class="forecast-grid">
             @foreach (var day in Model.Weather.Forecast)
             {
                 <div class="forecast-card">
                     <div class="forecast-date">@GetDayStatus(day.Date)</div>
                     <div class="forecast-icon">
-                        <i class="fas fa-cloud @GetWeatherIcon(day.IconCode)"></i>
+                        <i class="fas fa-cloud forecast-icon @GetWeatherIcon(day.IconCode)"></i>
                     </div>
                     <div class="forecast-condition">@(day.Day?.ConditionText ?? "Unspecified")</div>
                     <div class="forecast-temp">@day.MinTempC°/@day.MaxTempC°</div>
                     <div class="forecast-rain">Rain: @day.ChanceOfRain%</div>
                 </div>
             }
-            </div>
-            
-            <div class="sun-moon-info">
-                <div class="sun-moon-item">
-                    <div class="sun-moon-label">
-                        <i class="fas fa-sun sunrise-icon"></i>
-                        <span>Sunrise</span>
-                    </div>
-                    <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Sunrise</span>
-                </div>
-                
-                <div class="sun-moon-item">
-                    <div class="sun-moon-label">
-                        <i class="fas fa-sun sunset-icon"></i>
-                        <span>Sunset</span>
-                    </div>
-                    <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Sunset</span>
-                </div>
-                
-                <div class="sun-moon-item">
-                    <div class="sun-moon-label">
-                        <i class="fas fa-moon moon-icon"></i>
-                        <span>Moonrise</span>
-                    </div>
-                    <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moonrise</span>
-                </div>
-                
-                <div class="sun-moon-item">
-                    <div class="sun-moon-label">
-                        <i class="fas fa-moon moon-icon"></i>
-                        <span>Moonset</span>
-                    </div>
-                    <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moonset</span>
-                </div>
-                
-                <div class="sun-moon-item">
-                    <span class="moon-phase-label">Moon phase</span>
-                    <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moon_Illumination%</span>
-                </div>
-            </div>
         </div>
-        
-        <!-- Right Column - Public Transport -->
-        <div class="transport-section">
-            <h3 class="section-title">Upcoming Departures</h3>
-            
-            <div class="transport-list">
-                @foreach (var transport in Model.TimeTable.Take(5))
-                {
-                 
-                    var departureTime = DateTime.Parse(transport.DepartureTime);
-                    var minutesUntilDeparture = (int)(departureTime - DateTime.Now).TotalMinutes;
-                    
-                    <div class="transport-item">
-                        <i class="fas transport-color @GetTransPortIcon(transport.InternalTransportationName)"></i>
-                        <div class="transport-info">
-                            <div class="transport-name">@transport.LineNumber</div>
-                            <div class="transport-destination">to @transport.Direction</div>
-                        </div>
-                        <div class="transport-time">@DateTime.Parse(transport.DepartureTime).ToShortTimeString() (@minutesUntilDeparture min)</div>
-                    </div>
-                }
+
+        <div class="sun-moon-info">
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-sun sunrise-icon"></i>
+                    <span>Sunrise</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Sunrise</span>
             </div>
-            
-            <div class="last-updated">
-                <div class="update-text">Last updated: <span id="current-time"></span></div>
+
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-sun sunset-icon"></i>
+                    <span>Sunset</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Sunset</span>
+            </div>
+
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-moon moon-icon"></i>
+                    <span>Moonrise</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moonrise</span>
+            </div>
+
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-moon moon-icon"></i>
+                    <span>Moonset</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moonset</span>
+            </div>
+
+            <div class="sun-moon-item">
+                <span class="moon-phase-label">Moon phase</span>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moon_Illumination%</span>
             </div>
         </div>
     </div>
+
+    <!-- Right Column - Public Transport -->
+    <div class="transport-section">
+        <h3 class="section-title">Upcoming Departures</h3>
+
+        <div class="transport-list">
+            @foreach (var transport in Model.TimeTable.Take(5))
+            {
+
+                var departureTime = DateTime.Parse(transport.DepartureTime);
+                var minutesUntilDeparture = (int)(departureTime - DateTime.Now).TotalMinutes;
+
+                <div class="transport-item">
+                    <i class="fas transport-color @GetTransPortIcon(transport.InternalTransportationName)"></i>
+                    <div class="transport-info">
+                        <div class="transport-name">@transport.LineNumber</div>
+                        <div class="transport-destination">to @transport.Direction</div>
+                    </div>
+                    <div class="transport-time">@DateTime.Parse(transport.DepartureTime).ToShortTimeString() (@minutesUntilDeparture min)</div>
+                </div>
+            }
+        </div>
+
+        <div class="last-updated">
+            <div class="update-text">Last updated: <span id="current-time"></span></div>
+        </div>
+    </div>
+</div>
 
 <script>
     // Update current time

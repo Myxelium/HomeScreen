@@ -13,11 +13,8 @@ var app = builder.Build();
 
 app.UseStaticFiles();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
 
