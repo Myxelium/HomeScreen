@@ -62,6 +62,9 @@ public class Forecast
     public WeatherSummary? Day { get; set; }
     public WeatherSummary? Night { get; set; }
     public Astro Astro { get; set; }
+    public int IconCode { get; set; }
+    
+    public int ChanceOfRain { get; set; }
 }
 public class Astro
 {

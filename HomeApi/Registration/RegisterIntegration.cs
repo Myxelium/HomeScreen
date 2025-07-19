@@ -1,6 +1,7 @@
 using HomeApi.Extensions;
 using HomeApi.Integration;
 using HomeApi.Integration.Client;
+using HomeApi.Integration.Client.WeatherClient;
 using HomeApi.Models.Configuration;
 using Microsoft.Extensions.Options;
 using Refit;
@@ -28,7 +29,11 @@ public static class RegisterIntegration
 
         services.AddRefitClient<IWeatherClient>()
             .ConfigureBaseAddress(apiConfiguration => apiConfiguration.BaseUrls.Weather);
+        
+        services.AddRefitClient<IResRobotClient>()
+            .ConfigureBaseAddress(apiConfiguration => apiConfiguration.BaseUrls.ResRobot);
 
+        services.AddScoped<IDepartureBoardService, DepartureBoardService>();
         services.AddScoped<IGeocodingService, GeocodingService>();
         services.AddScoped<IAuroraService, AuroraService>();
         services.AddScoped<IWeatherService, WeatherService>();

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace HomeApi.Handlers;
 
-public static class GetWeather
+public static class Weather
 {
     public record Command : IRequest<WeatherInformation>;
 

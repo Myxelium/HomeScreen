@@ -1,8 +1,7 @@
 using HomeApi.Models.Response;
-
-namespace HomeApi.Integration.Client;
-
 using Refit;
+
+namespace HomeApi.Integration.Client.WeatherClient;
 
 public interface IWeatherClient
 {
@@ -10,7 +9,7 @@ public interface IWeatherClient
     Task<WeatherData> GetForecastAsync(
         [AliasAs("key")] string apiKey,
         [AliasAs("q")] string coordinates,
-        [AliasAs("days")] int days = 7,
+        [AliasAs("days")] int days = 14,
         [AliasAs("lang")] string language = "sv",
         [AliasAs("aqi")] string aqi = "yes",
         [AliasAs("alerts")] string alerts = "yes");

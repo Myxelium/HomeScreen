@@ -1,0 +1,635 @@
+@using HomeApi.Models
+@using System;
+@using System.Linq;
+@using System.Collections.Generic;
+@model HomeApi.Models.Image
+
+@functions {
+    private string GetDayStatus(string input)
+    {
+        var date = DateTime.Parse(input);
+        var today = DateTime.Today;
+        var dayOfWeek = date.DayOfWeek.ToString();
+
+        if (date.Date == today)
+            return "Today";
+        if (date.Date == today.AddDays(1))
+            return "Tomorrow";
+        if (date >= today.AddDays(1) && date < today.AddDays(7))
+            return dayOfWeek;
+        return $"On {date:dddd, dd MMM yyyy}";
+    }
+    
+    private string GetTransPortIcon(string transportType)
+    {
+        var transportIcons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "buss", "fa-bus" },
+            { "bus", "fa-bus" },
+            { "tunnelbana", "fa-train-subway" },
+            { "metro", "fa-train-subway" },
+            { "tåg", "fa-train" },
+            { "train", "fa-train" },
+            { "båt", "fa-ferry" },
+            { "ferry", "fa-ferry" }
+        };
+
+        foreach (var keyword in transportIcons.Keys)
+        {
+            if (transportType.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                return transportIcons[keyword];
+        }
+
+        return "fa-question-circle";
+    }
+    
+    private string GetAirQualityStatus(AirQuality data)
+    {
+        var highestAqi = Math.Max(data.Us_Epa_Index, data.Gb_Defra_Index);
+
+        return highestAqi switch
+        {
+            <= 50 => "Good",
+            <= 100 => "Moderate",
+            <= 150 => "Unhealthy for Sensitive Groups",
+            <= 200 => "Unhealthy",
+            <= 300 => "Very Unhealthy",
+            _ => "Hazardous"
+        };
+    }
+    
+    private static string GetWeatherIcon(int code, bool isNight = false)
+    {
+        var map = new Dictionary<int, string>
+        {
+            // Clear/Sunny
+            { 1000, isNight ? "fa-moon" : "fa-sun" },
+            // Partly cloudy
+            { 1003, isNight ? "fa-cloud-moon" : "fa-cloud-sun" },
+            // Cloudy/Overcast
+            { 1006, "fa-cloud" },
+            { 1009, "fa-cloud" },
+            // Mist/Fog
+            { 1030, "fa-smog" },
+            { 1135, "fa-smog" },
+            { 1147, "fa-smog" },
+            // Rain/drizzle
+            { 1063, "fa-cloud-rain" },
+            { 1150, "fa-cloud-drizzle" },
+            { 1153, "fa-cloud-drizzle" },
+            { 1180, "fa-cloud-rain" },
+            { 1183, "fa-cloud-rain" },
+            { 1186, "fa-cloud-showers-heavy" },
+            { 1189, "fa-cloud-showers-heavy" },
+            { 1240, "fa-cloud-showers-heavy" },
+            { 1243, "fa-cloud-showers-heavy" },
+            { 1246, "fa-cloud-showers-heavy" },
+            // Sleet, freezing drizzle/rain
+            { 1069, "fa-cloud-meatball" },
+            { 1072, "fa-cloud-meatball" },
+            { 1168, "fa-cloud-meatball" },
+            { 1171, "fa-cloud-meatball" },
+            { 1198, "fa-cloud-meatball" },
+            { 1201, "fa-cloud-meatball" },
+            { 1204, "fa-cloud-meatball" },
+            { 1207, "fa-cloud-meatball" },
+            { 1249, "fa-cloud-meatball" },
+            { 1252, "fa-cloud-meatball" },
+            // Snow
+            { 1066, "fa-snowflake" },
+            { 1114, "fa-snowflake" },
+            { 1117, "fa-snowflake" },
+            { 1210, "fa-snowflake" },
+            { 1213, "fa-snowflake" },
+            { 1216, "fa-snowflake" },
+            { 1219, "fa-snowflake" },
+            { 1222, "fa-snowflake" },
+            { 1225, "fa-snowflake" },
+            { 1255, "fa-snowflake" },
+            { 1258, "fa-snowflake" },
+            // Snow showers
+            { 1261, "fa-snowflake" },
+            { 1264, "fa-snowflake" },
+            { 1279, "fa-snowflake" },
+            { 1282, "fa-snowflake" },
+            // Thunderstorms
+            { 1087, "fa-bolt" },
+            { 1273, "fa-bolt" },
+            { 1276, "fa-bolt" },
+            // Ice pellets
+            { 1237, "fa-icicles" },
+        };
+
+        return map.TryGetValue(code, out var value) ? value : "fa-question-circle";
+    }
+    
+    private static string UseHighContrast(bool isHighContrast)
+    {
+        return isHighContrast ? "high-contrast" : string.Empty;
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .high-contrast * {
+            color: hsl(0 0% 0%) !important;
+            border-color:  hsl(0 0% 0%) !important;
+        }
+        
+        /* Color Variables */
+        :root {
+            /* Base colors - Grayscale */
+            --background: 0 0% 100%;
+            --foreground: 0 0% 20%;
+            --card: 0 0% 100%;
+            --card-foreground: 0 0% 20%;
+            --primary: 0 0% 30%;
+            --primary-foreground: 0 0% 98%;
+            --muted: 0 0% 96%;
+            --muted-foreground: 0 0% 50%;
+            --border: 0 0% 85%;
+
+            /* Icon colors - All red */
+            --weather: 0 85% 60%;
+            --weather-sunny: 0 85% 60%;
+            --weather-cloudy: 0 85% 60%;
+            --weather-rainy: 0 85% 60%;
+            --weather-aurora: 0 85% 60%;
+
+            /* Air quality colors - Red */
+            --air-good: 0 85% 60%;
+            --air-moderate: 0 85% 60%;
+            --air-bad: 0 85% 60%;
+
+            /* Transport colors - Red */
+            --transport-color: 0 85% 60%;
+        }
+
+        /* Main weather card */
+        .weather-card {
+            width: 800px;
+            height: 480px;
+            background: linear-gradient(135deg,
+            hsl(var(--card)) 0%,
+            hsl(var(--card)) 50%,
+            hsl(var(--muted) / 0.3) 100%);
+            border: 2px solid hsl(var(--border) / 0.2);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            color: hsl(var(--foreground));
+        }
+
+        /* Left Column - Current Weather */
+        .current-weather {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: hsl(var(--foreground));
+        }
+
+        .location-icon {
+            color: hsl(0 85% 60%) !important;
+            font-size: 14px;
+        }
+
+        .location-text {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .current-temp {
+            text-align: center;
+            margin: 8px 0;
+        }
+
+        .temp-main {
+            font-size: 36px;
+            font-weight: bold;
+            color: hsl(var(--foreground));
+        }
+
+        .feels-like {
+            font-size: 14px;
+            color: hsl(var(--muted-foreground));
+            margin-top: 4px;
+        }
+
+        .weather-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .detail-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .cloud-icon {
+            color: hsl(var(--weather-cloudy)) !important;
+        }
+
+        .wind-icon, .activity-icon {
+            color: hsl(0 85% 60%) !important;
+        }
+
+        .aurora-icon {
+            color: hsl(var(--weather-aurora)) !important;
+        }
+
+        .air-quality-badge {
+            background: hsl(var(--air-good));
+            color: hsl(0, 0%, 100%) !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bolder;
+            text-align: center;
+        }
+
+        /* Middle Column - Forecast */
+        .forecast-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            font-size: 16px;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .forecast-card {
+            background: hsl(var(--muted) / 0.2);
+            border: 1px solid hsl(var(--border) / 0.5);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .forecast-date {
+            font-size: 12px;
+            font-weight: 500;
+            color: hsl(var(--foreground));
+        }
+
+        .forecast-icon {
+            display: flex;
+            justify-content: center;
+            margin: 4px 0;
+            color: hsl(var(--weather)) !important;
+        }
+
+        .forecast-condition {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .forecast-temp {
+            font-size: 14px;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+        }
+
+        .forecast-rain {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .weather-sunny {
+            color: hsl(var(--weather-sunny));
+            font-size: 24px;
+        }
+
+        .weather-cloudy {
+            color: hsl(var(--weather-cloudy));
+            font-size: 24px;
+        }
+
+        .weather-rainy {
+            color: hsl(var(--weather-rainy));
+            font-size: 24px;
+        }
+
+        .sun-moon-info {
+            padding-top: 8px;
+            border-top: 1px solid hsl(var(--border));
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sun-moon-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sun-moon-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .sun-moon-value {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .moon-phase-label {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .sunrise-icon, .sunset-icon {
+            color: hsl(0 85% 60%) !important;
+        }
+
+        .moon-icon {
+            color: hsl(0 85% 60%) !important;
+        }
+
+        /* Right Column - Transport */
+        .transport-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .transport-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .transport-item {
+            background: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .transport-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .transport-item i {
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        .transport-color {
+            color: hsl(var(--transport-color)) !important;
+        }
+
+        .transport-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .transport-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: hsl(var(--foreground));
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .transport-destination {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+            white-space: nowrap;
+            overflow: hidden;
+            width: 152px;
+            text-overflow: ellipsis;
+        }
+
+        .transport-time {
+            font-size: 14px;
+            font-weight: 600;
+            color: hsl(var(--primary));
+            text-align: right;
+        }
+
+        .last-updated {
+            padding-top: 16px;
+            margin-top: 16px;
+            border-top: 1px solid hsl(var(--border));
+        }
+
+        .update-text {
+            font-size: 12px;
+            color: hsl(var(--muted-foreground));
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="weather-card @UseHighContrast(ViewBag.IsHighContrast)">
+    <!-- Left Column - Current Weather -->
+    <div class="current-weather">
+        <div class="location">
+            <i class="fas fa-map-marker-alt location-icon"></i>
+            <span class="location-text">@Model.Weather.CityName</span>
+        </div>
+
+        <div class="current-temp">
+            <div class="temp-main">@Model.Weather.Current.Temperature°C</div>
+            <div class="feels-like">Feels like @Model.Weather.Current.Feelslike°C</div>
+        </div>
+
+        <div class="weather-details">
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-cloud cloud-icon"></i>
+                    <span>Clouds</span>
+                </div>
+                <span class="detail-value">@Model.Weather.Current.Cloud%</span>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-wind wind-icon"></i>
+                    <span>Wind</span>
+                </div>
+                <span class="detail-value">@Model.Weather.Current.WindPerMeterSecond.ToString("0.##"); m/s @Model.Weather.Current.WindDirection</span>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-chart-line activity-icon"></i>
+                    <span>Gusts</span>
+                </div>
+                <span class="detail-value">@Model.Weather.Current.WindGustPerMeterSecond.ToString("0.##"); m/s</span>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas fa-star aurora-icon"></i>
+                    <span>Aurora</span>
+                </div>
+                <span class="detail-value">@Model.Weather.Current.AuroraProbability.Value%</span>
+            </div>
+        </div>
+
+        <div class="air-quality-badge">
+            Air Quality: @GetAirQualityStatus(Model.Weather.Current.AirQuality)
+        </div>
+    </div>
+
+    <!-- Middle Column - Forecast -->
+    <div class="forecast-section">
+        <h3 class="section-title">@Model.Weather.Forecast.Count-Day Forecast</h3>
+
+        <div class="forecast-grid">
+            @foreach (var day in Model.Weather.Forecast)
+            {
+                <div class="forecast-card">
+                    <div class="forecast-date">@GetDayStatus(day.Date)</div>
+                    <div class="forecast-icon">
+                        <i class="fas fa-cloud forecast-icon @GetWeatherIcon(day.IconCode)"></i>
+                    </div>
+                    <div class="forecast-condition">@(day.Day?.ConditionText ?? "Unspecified")</div>
+                    <div class="forecast-temp">@day.MinTempC°/@day.MaxTempC°</div>
+                    <div class="forecast-rain">Rain: @day.ChanceOfRain%</div>
+                </div>
+            }
+        </div>
+
+        <div class="sun-moon-info">
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-sun sunrise-icon"></i>
+                    <span>Sunrise</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Sunrise</span>
+            </div>
+
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-sun sunset-icon"></i>
+                    <span>Sunset</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Sunset</span>
+            </div>
+
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-moon moon-icon"></i>
+                    <span>Moonrise</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moonrise</span>
+            </div>
+
+            <div class="sun-moon-item">
+                <div class="sun-moon-label">
+                    <i class="fas fa-moon moon-icon"></i>
+                    <span>Moonset</span>
+                </div>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moonset</span>
+            </div>
+
+            <div class="sun-moon-item">
+                <span class="moon-phase-label">Moon phase</span>
+                <span class="sun-moon-value">@Model.Weather.Forecast[0].Astro.Moon_Illumination%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Public Transport -->
+    <div class="transport-section">
+        <h3 class="section-title">Upcoming Departures</h3>
+
+        <div class="transport-list">
+            @foreach (var transport in Model.TimeTable.Take(5))
+            {
+
+                var departureTime = DateTime.Parse(transport.DepartureTime);
+                var minutesUntilDeparture = (int)(departureTime - DateTime.Now).TotalMinutes;
+
+                <div class="transport-item">
+                    <i class="fas transport-color @GetTransPortIcon(transport.InternalTransportationName)"></i>
+                    <div class="transport-info">
+                        <div class="transport-name">@transport.LineNumber</div>
+                        <div class="transport-destination">to @transport.Direction</div>
+                    </div>
+                    <div class="transport-time">@DateTime.Parse(transport.DepartureTime).ToShortTimeString() (@minutesUntilDeparture min)</div>
+                </div>
+            }
+        </div>
+
+        <div class="last-updated">
+            <div class="update-text">Last updated: <span id="current-time"></span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('current-time').textContent = now.toLocaleTimeString();
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
+</body>
+</html>

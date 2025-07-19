@@ -1,4 +1,4 @@
-using HomeApi.Integration.Client;
+using HomeApi.Integration.Client.WeatherClient;
 using HomeApi.Models.Configuration;
 using HomeApi.Models.Response;
 using Microsoft.Extensions.Options;

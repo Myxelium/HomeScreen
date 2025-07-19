@@ -6,13 +6,30 @@ using Microsoft.AspNetCore.Mvc;
 namespace HomeApi.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("home")]
 public class HomeController(IMediator mediator) : ControllerBase
 {
-    [HttpGet(Name = "GetHome")]
+    [HttpGet(Name = "getHome")]
     public async Task<ActionResult<WeatherInformation>> Get()
     {
-        var result = await mediator.Send(new GetWeather.Command());
-        return Ok(result);
+        return Ok(await mediator.Send(new Weather.Command()));
+    }
+    
+    [HttpGet("default.jpg")]
+    public async Task<IActionResult> GetImage()
+    {
+        return File(await mediator.Send(new ImageGeneration.Command()), "image/jpeg");
+    }
+    
+    [HttpGet("configuration")]
+    public async Task<ActionResult<MicroProcessorConfiguration>> GetCombinedBuffers()
+    {
+        return Ok(await mediator.Send(new Configuration.Command()));
+    }
+    
+    [HttpGet("departure-board")]
+    public async Task<ActionResult<List<TimeTable>>> GetDepartureBoard()
+    {
+        return Ok(await mediator.Send(new DepartureBoard.Command()));
     }
 }
