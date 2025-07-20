@@ -20,6 +20,11 @@ on:
         required: true
         default: true
         type: boolean
+      create_release:
+        description: 'Create release'
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   build:
@@ -67,6 +72,31 @@ jobs:
         } else {
           Write-Host "ChromeHeadlessShell not found in published output"
         }
+    - name: Get previous tag
+      if: ${{ github.event.inputs.create_release != 'false' }}
+      id: previoustag
+      uses: 'WyriHaximus/github-action-get-previous-tag@v1'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get next minor version
+      if: ${{ github.event.inputs.create_release != 'false' }}
+      id: semver
+      uses: 'WyriHaximus/github-action-next-semvers@v1'
+      with:
+        version: ${{ steps.previoustag.outputs.tag }}
+        
+    - name: Create Release
+      if: ${{ github.event.inputs.create_release != 'false' }}
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ steps.semver.outputs.patch }}
+        release_name: Release ${{ steps.semver.outputs.patch }}
+        draft: false
+        prerelease: false
       
     - name: Generate appsettings.json
       run: |
@@ -180,7 +210,7 @@ jobs:
         Copy-Item -Path ".\output\dotnet\*" -Destination "C:\inetpub\applications\HomeApi" -Recurse -Force
         Write-Host "Files copied successfully"
         
-    - name: Start IIS Application Pool
+    - name: Restart IIS Application Pool
       if: ${{ github.event.inputs.restart_iis != 'false' }}
       run: |
         Import-Module WebAdministration
