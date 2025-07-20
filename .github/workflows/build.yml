@@ -108,21 +108,59 @@ jobs:
       run: |
         dir ./output/dotnet
     
-    - name: Copy .NET Publish Files to IIS Server
-      run: |
-        xcopy ".\output\dotnet\*" "C:\inetpub\applications\HomeApi" /s /i /y
-        
-    - name: Restart IIS Application Pool
-      if: ${{ github.event.inputs.restart_iis != 'false' }}
+    - name: Stop IIS Application Pool
       run: |
         Import-Module WebAdministration
-        $appPoolName = "${{ vars.IIS_APP_POOL_NAME }}" -or "HomeApi"
-        Write-Host "Restarting application pool: $appPoolName :)"
+        $appPoolName = "${{ vars.IIS_APP_POOL_NAME }}" 
+        if ([string]::IsNullOrEmpty($appPoolName)) {
+            $appPoolName = "HomeApi"
+        }
+        
+        Write-Host "Stopping application pool: $appPoolName"
         
         # Check if app pool exists
         if (Test-Path "IIS:\AppPools\$appPoolName") {
-          Restart-WebAppPool -Name $appPoolName
-          Write-Host "Application pool restarted successfully"
+          # Stop app pool
+          if ((Get-WebAppPoolState -Name $appPoolName).Value -ne "Stopped") {
+            Stop-WebAppPool -Name $appPoolName
+            Start-Sleep -Seconds 5  # Give it time to fully stop
+            Write-Host "Application pool stopped successfully"
+          } else {
+            Write-Host "Application pool was already stopped"
+          }
+        } else {
+          Write-Host "Warning: Application pool '$appPoolName' not found. Will attempt to copy files anyway."
+        }
+
+    - name: Copy .NET Publish Files to IIS Server
+      run: |
+        # Ensure destination directory exists
+        if (-not (Test-Path "C:\inetpub\applications\HomeApi")) {
+          New-Item -ItemType Directory -Path "C:\inetpub\applications\HomeApi" -Force
+          Write-Host "Created destination directory"
+        }
+        
+        # Copy files
+        Write-Host "Copying files to destination..."
+        Copy-Item -Path ".\output\dotnet\*" -Destination "C:\inetpub\applications\HomeApi" -Recurse -Force
+        Write-Host "Files copied successfully"
+        
+    - name: Start IIS Application Pool
+      if: ${{ github.event.inputs.restart_iis != 'false' }}
+      run: |
+        Import-Module WebAdministration
+        $appPoolName = "${{ vars.IIS_APP_POOL_NAME }}"
+        if ([string]::IsNullOrEmpty($appPoolName)) {
+            $appPoolName = "HomeApi"
+        }
+        
+        Write-Host "Starting application pool: $appPoolName"
+        
+        # Check if app pool exists
+        if (Test-Path "IIS:\AppPools\$appPoolName") {
+          # Start app pool
+          Start-WebAppPool -Name $appPoolName
+          Write-Host "Application pool started successfully"
         } else {
           Write-Host "Warning: Application pool '$appPoolName' not found. Using IISReset instead."
           iisreset /restart
