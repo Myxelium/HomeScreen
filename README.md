@@ -8,7 +8,7 @@ Core api and Esp32 code for displaying weather data and public transport informa
 - Display public transport information
 - Display time and date
 
-## Requirements
+## Requirements 🫥
 - ESP32 board
 - E-ink display (e.g. Waveshare 7.5 inch)
 
