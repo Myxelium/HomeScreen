@@ -126,7 +126,7 @@ jobs:
           }
           ApiConfiguration = @{
             EspConfiguration = @{
-              InformationBoardImageUrl = "${{ vars.ESP_IMAGE_URL }}"
+              InformationBoardImageUrl = "http://server_ip:port/home/default.jpg"
               UpdateIntervalMinutes = [int]"${{ vars.ESP_UPDATE_INTERVAL }}"
               BlackTextThreshold = [int]"${{ vars.ESP_BLACK_TEXT_THRESHOLD }}"
               EnableDithering = [System.Convert]::ToBoolean("${{ vars.ESP_ENABLE_DITHERING }}")
