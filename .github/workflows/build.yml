@@ -97,13 +97,9 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Zip the build for GitHub Release
+    - name: Zip the build for github release
       if: ${{ github.event.inputs.create_release != 'false' }}
-      run: |
-        Compress-Archive \
-          -Path './output/*' \
-          -DestinationPath "./output/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip" \
-          -CompressionLevel Optimal -Force
+      run: Compress-Archive -Path './output/*' -DestinationPath './output/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip' -CompressionLevel Optimal -Force
 
     - name: Upload Release Asset
       if: ${{ github.event.inputs.create_release != 'false' }}
