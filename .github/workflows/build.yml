@@ -31,9 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'prod' }}
     steps:        
-    - name: Get Current User
-      run: |
-        $env:USERNAME
+    # - name: Get Current User
+    #   run: |
+    #     $env:USERNAME
     
     - name: Checkout Repository
       uses: actions/checkout@v2
