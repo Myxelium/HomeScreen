@@ -107,8 +107,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./out/HomeScreen_Build_"{${{ steps.semver.outputs.next }}}".zip
-        asset_name: Lunaris_${{steps.semver.outputs.patch}}.zip
+        asset_path: ./output/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip
+        asset_name: HomeScreen_Build_${{steps.semver.outputs.patch}}.zip
         asset_content_type: application/zip
       
     - name: Generate appsettings.json
