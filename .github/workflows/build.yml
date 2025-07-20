@@ -30,6 +30,45 @@ jobs:
 
     - name: Publish .NET Project
       run: dotnet publish ./HomeApi/HomeApi.csproj --configuration Release --output ./output/dotnet
+      
+    - name: Generate appsettings.json
+      run: |
+        $appSettings = @{
+          Logging = @{
+            LogLevel = @{
+              Default = "Information"
+              "Microsoft.AspNetCore" = "Warning"
+            }
+          }
+          ApiConfiguration = @{
+            EspConfiguration = @{
+              InformationBoardImageUrl = "${{ vars.ESP_IMAGE_URL }}"
+              UpdateIntervalMinutes = [int]"${{ vars.ESP_UPDATE_INTERVAL }}"
+              BlackTextThreshold = [int]"${{ vars.ESP_BLACK_TEXT_THRESHOLD }}"
+              EnableDithering = [System.Convert]::ToBoolean("${{ vars.ESP_ENABLE_DITHERING }}")
+              DitheringStrength = [int]"${{ vars.ESP_DITHERING_STRENGTH }}"
+              EnhanceContrast = [System.Convert]::ToBoolean("${{ vars.ESP_ENHANCE_CONTRAST }}")
+              ContrastStrength = [int]"${{ vars.ESP_CONTRAST_STRENGTH }}"
+              IsHighContrastMode = [System.Convert]::ToBoolean("${{ vars.ESP_HIGH_CONTRAST_MODE }}")
+            }
+            Keys = @{
+              Weather = "${{ secrets.WEATHER_API_KEY }}"
+              ResRobot = "${{ secrets.RES_ROBOT_API_KEY }}"
+            }
+            BaseUrls = @{
+              Nominatim = "${{ vars.NOMINATIM_URL }}"
+              Aurora = "${{ vars.AURORA_URL }}"
+              Weather = "${{ vars.WEATHER_URL }}"
+              ResRobot = "${{ vars.RES_ROBOT_URL }}"
+            }
+            DefaultCity = "${{ vars.DEFAULT_CITY }}"
+            DefaultStation = "${{ vars.DEFAULT_STATION }}"
+          }
+          AllowedHosts = "*"
+        }
+        
+        $appSettings | ConvertTo-Json -Depth 10 | Set-Content -Path "./output/dotnet/appsettings.json"
+        Write-Host "Generated appsettings.json successfully"
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
