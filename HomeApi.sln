@@ -7,6 +7,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeApi", "HomeApi\HomeApi.csproj", "{0F340BDE-7B8E-4ACD-8A24-5B5BFFB424F4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ESP32_CODE", "ESP32_CODE", "{B3BCE85B-5021-4D4D-8758-CA7AAFF86C2D}"
+	ProjectSection(SolutionItems) = preProject
+		Esp32_Code\ESPSCREEN\ESPSCREEN.ino = Esp32_Code\ESPSCREEN\ESPSCREEN.ino
+		Esp32_Code\INFOSCREEN_WITH_INTERVAL\INFOSCREEN_WITH_INTERVAL.ino = Esp32_Code\INFOSCREEN_WITH_INTERVAL\INFOSCREEN_WITH_INTERVAL.ino
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,5 +26,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0F340BDE-7B8E-4ACD-8A24-5B5BFFB424F4} = {FF03E920-D5E9-4BE0-AA6F-DB2E9287D3E4}
+		{B3BCE85B-5021-4D4D-8758-CA7AAFF86C2D} = {FF03E920-D5E9-4BE0-AA6F-DB2E9287D3E4}
 	EndGlobalSection
 EndGlobal

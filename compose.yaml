@@ -1,13 +1,15 @@
-﻿services:
-  homeapi:
-    image: homeapi
-    build:
-      context: .
-      dockerfile: Dockerfile
+﻿version: '3.8'
 
-  homeapi-1:
-    image: homeapi-1
+services:
+  homeapi:
     build:
       context: .
       dockerfile: HomeApi/Dockerfile
-
+    image: homeapi:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./HomeApi/appsettings.Development.json:/app/appsettings.Development.json:ro
+    restart: unless-stopped

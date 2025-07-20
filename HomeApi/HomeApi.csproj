@@ -20,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Include="..\README.md" />
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
