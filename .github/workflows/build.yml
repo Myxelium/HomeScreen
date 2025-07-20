@@ -94,6 +94,22 @@ jobs:
         release_name: Release ${{ steps.semver.outputs.next }}
         draft: false
         prerelease: false
+        
+    - name: Zip the build for github release
+      if: ${{ github.event.inputs.create_release != 'false' }}
+      run: 7z a -tzip ./out/HomeScreen_Build_"{${{ steps.semver.outputs.next }}}".zip ./out/*
+
+    - name: Upload Release Asset
+      if: ${{ github.event.inputs.create_release != 'false' }}
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./out/HomeScreen_Build_"{${{ steps.semver.outputs.next }}}".zip
+        asset_name: Lunaris_${{steps.semver.outputs.patch}}.zip
+        asset_content_type: application/zip
       
     - name: Generate appsettings.json
       run: |
