@@ -87,7 +87,7 @@ ESP -->|HTTP GET /home/default.jpg| API
 end
 
     subgraph HomeApi
-        API[HomeController (API)]
+        API[HomeControllerAPI]
         API -->|MediatR| Handlers
         Handlers -->|Service Calls| Services
         Services -->|Refit Clients| Clients
