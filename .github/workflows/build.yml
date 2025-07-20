@@ -28,7 +28,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted  # Ensure your self-hosted runner is configured
+    runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'prod' }}
     steps:        
     - name: Get Current User
