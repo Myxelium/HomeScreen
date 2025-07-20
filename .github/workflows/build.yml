@@ -4,11 +4,27 @@ on:
   push:
     branches:
       - master  # Change to your default branch if different
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+        - prod
+        - dev
+        - test
+      restart_iis:
+        description: 'Restart IIS after deployment'
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   build:
     runs-on: self-hosted  # Ensure your self-hosted runner is configured
-    environment: 'prod'
+    environment: ${{ github.event.inputs.environment || 'prod' }}
     steps:        
     - name: Get Current User
       run: |
@@ -79,7 +95,7 @@ jobs:
   deploy:
     runs-on: self-hosted  # Ensure your self-hosted runner is configured
     needs: build
-    environment: 'prod'
+    environment: ${{ github.event.inputs.environment || 'prod' }}
 
     steps:
     - name: Download .NET Artifacts
@@ -97,6 +113,7 @@ jobs:
         xcopy ".\output\dotnet\*" "C:\inetpub\applications\HomeApi" /s /i /y
         
     - name: Restart IIS Application Pool
+      if: ${{ github.event.inputs.restart_iis != 'false' }}
       run: |
         Import-Module WebAdministration
         $appPoolName = "${{ vars.IIS_APP_POOL_NAME }}" -or "HomeApi"
