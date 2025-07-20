@@ -1,10 +1,10 @@
-[![myxelium - homescreen](https://img.shields.io/static/v1?label=myxelium&message=homescreen&color=purple&logo=github)](https://github.com/myxelium/homescreen "Go to GitHub repo")
-[![stars - homescreen](https://img.shields.io/github/stars/myxelium/homescreen?style=social)](https://github.com/myxelium/homescreen)
-[![forks - homescreen](https://img.shields.io/github/forks/myxelium/homescreen?style=social)](https://github.com/myxelium/homescreen)
-[![GitHub tag](https://img.shields.io/github/tag/myxelium/homescreen?include_prereleases=&sort=semver&color=purple)](https://github.com/myxelium/homescreen/releases/)
+[![myxelium - Wireless_Eink_HomeScreen](https://img.shields.io/static/v1?label=myxelium&message=Wireless_Eink_HomeScreen&color=purple&logo=github)](https://github.com/myxelium/Wireless_Eink_HomeScreen "Go to GitHub repo")
+[![stars - Wireless_Eink_HomeScreen](https://img.shields.io/github/stars/myxelium/Wireless_Eink_HomeScreen?style=social)](https://github.com/myxelium/Wireless_Eink_HomeScreen)
+[![forks - Wireless_Eink_HomeScreen](https://img.shields.io/github/forks/myxelium/Wireless_Eink_HomeScreen?style=social)](https://github.com/myxelium/Wireless_Eink_HomeScreen)
+[![GitHub tag](https://img.shields.io/github/tag/myxelium/Wireless_Eink_HomeScreen?include_prereleases=&sort=semver&color=purple)](https://github.com/myxelium/Wireless_Eink_HomeScreen/releases/)
 [![License](https://img.shields.io/badge/License-GPL-purple)](https://www.gnu.org/licenses/gpl-3.0.en.html)
-[![issues - homescreen](https://img.shields.io/github/issues/myxelium/homescreen)](https://github.com/myxelium/homescreen/issues)
-[![Build and Deploy](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml/badge.svg)](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml)
+[![issues - Wireless_Eink_HomeScreen](https://img.shields.io/github/issues/myxelium/Wireless_Eink_HomeScreen)](https://github.com/myxelium/Wireless_Eink_HomeScreen/issues)
+[![Build and Deploy](https://github.com/Myxelium/Wireless_Eink_HomeScreen/actions/workflows/build.yml/badge.svg)](https://github.com/Myxelium/Wireless_Eink_HomeScreen/actions/workflows/build.yml)
 # What why how
 This is a project I created that pulls weather data from the internet, transforms it into custom images, and displays them on an e-ink screen powered by an ESP32.
 
