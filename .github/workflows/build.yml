@@ -97,7 +97,7 @@ jobs:
         
     - name: Zip the build for github release
       if: ${{ github.event.inputs.create_release != 'false' }}
-      run: 7z a -tzip ./out/HomeScreen_Build_"${{ steps.semver.outputs.next }}".zip ./out/*
+      run: 7z a -tzip ./out/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip ./out/*
 
     - name: Upload Release Asset
       if: ${{ github.event.inputs.create_release != 'false' }}
