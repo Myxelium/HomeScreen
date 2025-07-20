@@ -78,6 +78,7 @@ API endpoints:
 
 When running, API documentation is available through Scalar at `/scalar`.
 
+```mermaid
 flowchart TD
 subgraph ESP32 Device
 ESP[ESP32 E-Ink Display]
@@ -105,3 +106,4 @@ end
     ExtAPIs -.-> AuroraAPI
     ExtAPIs -.-> NominatimAPI
     ExtAPIs -.-> ResRobotAPI
+```
