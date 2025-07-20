@@ -107,29 +107,6 @@ jobs:
         $appSettings | ConvertTo-Json -Depth 10 | Set-Content -Path "./output/dotnet/appsettings.json"
         Write-Host "Generated appsettings.json successfully"
 
-    # If Chrome folders are missing, manually ensure they're included
-    - name: Ensure Chrome Dependencies are Included
-      run: |
-        # Check if Chrome dependencies need to be copied from source
-        if (-not (Test-Path -Path "./output/dotnet/Chrome") -or -not (Test-Path -Path "./output/dotnet/ChromeHeadlessShell")) {
-          Write-Host "Checking for Chrome dependencies in source directory..."
-          
-          # First check the project directory for Chrome files
-          $sourceChromeDir = "./HomeApi/Chrome"
-          $sourceHeadlessShell = "./HomeApi/ChromeHeadlessShell"
-          
-          if (Test-Path -Path $sourceChromeDir) {
-            Write-Host "Found Chrome directory in source, copying..."
-            New-Item -ItemType Directory -Path "./output/dotnet/Chrome" -Force
-            Copy-Item -Path "$sourceChromeDir/*" -Destination "./output/dotnet/Chrome" -Recurse -Force
-          }
-          
-          if (Test-Path -Path $sourceHeadlessShell) {
-            Write-Host "Found ChromeHeadlessShell in source, copying..."
-            Copy-Item -Path $sourceHeadlessShell -Destination "./output/dotnet/" -Force
-          }
-        }
-
     # Check wwwroot and manually copy if missing
     - name: Ensure wwwroot is Included
       run: |
@@ -165,29 +142,6 @@ jobs:
       with:
         name: dotnet-artifacts
         path: ./output/dotnet
-
-    - name: Check Output Files
-      run: |
-        dir ./output/dotnet
-        
-        # Check for critical folders
-        if (Test-Path -Path "./output/dotnet/wwwroot") {
-            Write-Host "✅ wwwroot folder present"
-        } else {
-            Write-Host "❌ wwwroot folder missing!"
-        }
-        
-        if (Test-Path -Path "./output/dotnet/Chrome") {
-            Write-Host "✅ Chrome folder present"
-        } else {
-            Write-Host "❌ Chrome folder missing!"
-        }
-        
-        if (Test-Path -Path "./output/dotnet/ChromeHeadlessShell") {
-            Write-Host "✅ ChromeHeadlessShell present"
-        } else {
-            Write-Host "❌ ChromeHeadlessShell missing!"
-        }
     
     - name: Stop IIS Application Pool
       run: |
