@@ -116,3 +116,16 @@ end
     ExtAPIs -.-> NominatimAPI
     ExtAPIs -.-> ResRobotAPI
 ```
+
+# ESP32 configuration and building
+<img width="4096" height="1842" alt="image" src="https://github.com/user-attachments/assets/5acf1b3b-f9bb-48bd-b310-a2852544eaba" />
+
+Best way of getting the ESP32 ready for code upload is to follow this guide [https://web.archive.org/web/20250706150325/https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board] (WAVESHARE ESP32 GUIDE).
+Once you have it ready so you can upload code to it copy my code in: Esp32_Code/INFOSCREEN_WITH_INTERVAL from this repo.
+
+Install following libraries (if more is needed search for them and install them too): 
+* ArduinoJson
+* GUI_Paint
+* JPEGDEC
+
+You need the Waveshare examples installed since it uses code from them. See above link to find the download.
