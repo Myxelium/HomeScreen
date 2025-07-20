@@ -6,7 +6,7 @@
 [![issues - homescreen](https://img.shields.io/github/issues/myxelium/homescreen)](https://github.com/myxelium/homescreen/issues)
 [![Build and Deploy](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml/badge.svg)](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml)
 # This
-Core api and Esp32 (Micro Controller) code for displaying weather data and public transport information on a e-ink display.
+Core api and [Esp32 (Microcontroller)](https://en.wikipedia.org/wiki/ESP32) code for displaying weather data and public transport information on a e-ink display.
 
 <img width="800" height="480" alt="image" src="https://github.com/user-attachments/assets/ef5af0c6-ea3a-494d-b2af-3de6e70b3e6a" />
 
@@ -18,8 +18,8 @@ All commits has to follow this [Conventional Commits style](https://www.conventi
 - Display time and date
 
 ## Requirements 🫥
-- ESP32 board
-- E-ink display (e.g. Waveshare 7.5 inch)
+- [ESP32 board](https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board)
+- [E-ink display (e.g. Waveshare 7.5 inch)](https://www.waveshare.com/7.5inch-e-paper-hat.htm)
 
 # Installation
 
