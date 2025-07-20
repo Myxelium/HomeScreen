@@ -1,5 +1,12 @@
-# This [![Build and Deploy](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml/badge.svg)](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml)
-Core api and Esp32 code for displaying weather data and public transport information on a e-ink display.
+[![myxelium - homescreen](https://img.shields.io/static/v1?label=myxelium&message=homescreen&color=purple&logo=github)](https://github.com/myxelium/homescreen "Go to GitHub repo")
+[![stars - homescreen](https://img.shields.io/github/stars/myxelium/homescreen?style=social)](https://github.com/myxelium/homescreen)
+[![forks - homescreen](https://img.shields.io/github/forks/myxelium/homescreen?style=social)](https://github.com/myxelium/homescreen)
+[![GitHub tag](https://img.shields.io/github/tag/myxelium/homescreen?include_prereleases=&sort=semver&color=purple)](https://github.com/myxelium/homescreen/releases/)
+[![License](https://img.shields.io/badge/License-GPL-purple)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![issues - homescreen](https://img.shields.io/github/issues/myxelium/homescreen)](https://github.com/myxelium/homescreen/issues)
+[![Build and Deploy](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml/badge.svg)](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml)
+# This
+Core api and Esp32 (Micro Controller) code for displaying weather data and public transport information on a e-ink display.
 
 <img width="800" height="480" alt="image" src="https://github.com/user-attachments/assets/ef5af0c6-ea3a-494d-b2af-3de6e70b3e6a" />
 
@@ -92,7 +99,7 @@ end
         API[HomeControllerAPI]
         API -->|MediatR| Handlers
         Handlers -->|Service Calls| Services
-        Services -->|Refit Clients| Clients
+        Services -->|Refit Http Clients| Clients
         Clients -->|External APIs| ExtAPIs
         API -->|Returns JSON/JPEG| ESP
     end
