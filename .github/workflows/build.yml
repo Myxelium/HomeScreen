@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - master  # Change to your default branch if different
+      - master
   workflow_dispatch:
     inputs:
       environment:
@@ -28,7 +28,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted  # Ensure your self-hosted runner is configured
+    runs-on: self-hosted
     environment: ${{ github.event.inputs.environment || 'prod' }}
     steps:        
     - name: Get Current User
@@ -43,7 +43,7 @@ jobs:
     - name: Set up .NET
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: '9.0'  # Change to your required .NET version
+        dotnet-version: '9.0'
 
     - name: Restore .NET Dependencies
       run: dotnet restore ./HomeApi.sln
@@ -74,6 +74,24 @@ jobs:
         } else {
           Write-Host "ChromeHeadlessShell not found in published output"
         }
+        
+    # Check wwwroot and manually copy if missing
+    - name: Ensure wwwroot is Included
+      run: |
+        if (-not (Test-Path -Path "./output/dotnet/wwwroot")) {
+          Write-Host "wwwroot folder not found in published output, manually copying..."
+          
+          # Check if wwwroot exists in project directory
+          $sourceWwwroot = "./HomeApi/wwwroot"
+          
+          if (Test-Path -Path $sourceWwwroot) {
+            Write-Host "Found wwwroot directory in source, copying..."
+            New-Item -ItemType Directory -Path "./output/dotnet/wwwroot" -Force
+            Copy-Item -Path "$sourceWwwroot/*" -Destination "./output/dotnet/wwwroot" -Recurse -Force
+          } else {
+            Write-Host "WARNING: Could not find wwwroot in source directory!"
+          }
+        }
 
     - name: Generate SemVer version
       if: ${{ github.event.inputs.create_release != 'false' }}
@@ -81,13 +99,12 @@ jobs:
       uses: ietf-tools/semver-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        branch: master            # ← change to "main" if that's your default
+        branch: master
         patchAll: true
-        # fallbackTag: v0.0.1     # ← optionally bootstrap from an existing tag
 
     - name: Create GitHub Release
       if: ${{ github.event.inputs.create_release != 'false' }}
-      id: create_release         # ← this is required
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -96,6 +113,46 @@ jobs:
         release_name: Release ${{ steps.semver.outputs.next }}
         draft: false
         prerelease: false
+    
+    - name: Create placeholder appsettings for release
+      if: ${{ github.event.inputs.create_release != 'false' }}
+      run: |
+        $appSettings = @{
+          Logging = @{
+            LogLevel = @{
+              Default = "Information"
+              "Microsoft.AspNetCore" = "Warning"
+            }
+          }
+          ApiConfiguration = @{
+            EspConfiguration = @{
+              InformationBoardImageUrl = "${{ vars.ESP_IMAGE_URL }}"
+              UpdateIntervalMinutes = [int]"${{ vars.ESP_UPDATE_INTERVAL }}"
+              BlackTextThreshold = [int]"${{ vars.ESP_BLACK_TEXT_THRESHOLD }}"
+              EnableDithering = [System.Convert]::ToBoolean("${{ vars.ESP_ENABLE_DITHERING }}")
+              DitheringStrength = [int]"${{ vars.ESP_DITHERING_STRENGTH }}"
+              EnhanceContrast = [System.Convert]::ToBoolean("${{ vars.ESP_ENHANCE_CONTRAST }}")
+              ContrastStrength = [int]"${{ vars.ESP_CONTRAST_STRENGTH }}"
+              IsHighContrastMode = [System.Convert]::ToBoolean("${{ vars.ESP_HIGH_CONTRAST_MODE }}")
+            }
+            Keys = @{
+              Weather = "SET THIS TO YOUR KEY"
+              ResRobot = "SET THIS TO YOUR KEY"
+            }
+            BaseUrls = @{
+              Nominatim = "${{ vars.NOMINATIM_URL }}"
+              Aurora = "${{ vars.AURORA_URL }}"
+              Weather = "${{ vars.WEATHER_URL }}"
+              ResRobot = "${{ vars.RES_ROBOT_URL }}"
+            }
+            DefaultCity = "CITY ADDRESS"
+            DefaultStation = "YOUR STATION"
+          }
+          AllowedHosts = "*"
+        }
+        
+        $appSettings | ConvertTo-Json -Depth 10 | Set-Content -Path "./output/dotnet/appsettings.json"
+        Write-Host "Created placeholder appsettings.json successfully"
 
     - name: Zip the build for github release
       if: ${{ github.event.inputs.create_release != 'false' }}
@@ -107,7 +164,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}    # ← now available
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
         asset_path: ./output/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip
         asset_name: HomeScreen_Build_${{ steps.semver.outputs.next }}.zip
         asset_content_type: application/zip
@@ -151,24 +208,6 @@ jobs:
         $appSettings | ConvertTo-Json -Depth 10 | Set-Content -Path "./output/dotnet/appsettings.json"
         Write-Host "Generated appsettings.json successfully"
 
-    # Check wwwroot and manually copy if missing
-    - name: Ensure wwwroot is Included
-      run: |
-        if (-not (Test-Path -Path "./output/dotnet/wwwroot")) {
-          Write-Host "wwwroot folder not found in published output, manually copying..."
-          
-          # Check if wwwroot exists in project directory
-          $sourceWwwroot = "./HomeApi/wwwroot"
-          
-          if (Test-Path -Path $sourceWwwroot) {
-            Write-Host "Found wwwroot directory in source, copying..."
-            New-Item -ItemType Directory -Path "./output/dotnet/wwwroot" -Force
-            Copy-Item -Path "$sourceWwwroot/*" -Destination "./output/dotnet/wwwroot" -Recurse -Force
-          } else {
-            Write-Host "WARNING: Could not find wwwroot in source directory!"
-          }
-        }
-
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -176,7 +215,7 @@ jobs:
         path: ./output/dotnet
 
   deploy:
-    runs-on: self-hosted  # Ensure your self-hosted runner is configured
+    runs-on: self-hosted
     needs: build
     environment: ${{ github.event.inputs.environment || 'prod' }}
 
