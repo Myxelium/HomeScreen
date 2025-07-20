@@ -5,8 +5,19 @@
 [![License](https://img.shields.io/badge/License-GPL-purple)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 [![issues - homescreen](https://img.shields.io/github/issues/myxelium/homescreen)](https://github.com/myxelium/homescreen/issues)
 [![Build and Deploy](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml/badge.svg)](https://github.com/Myxelium/HomeScreen/actions/workflows/build.yml)
-# This
-Core api and [Esp32 (Microcontroller)](https://en.wikipedia.org/wiki/ESP32) code for displaying weather data and public transport information on a e-ink display.
+# What why how
+This is a project I created that pulls weather data from the internet, transforms it into custom images, and displays them on an e-ink screen powered by an ESP32.
+
+## What This Project Does
+
+I wanted a low-power way to see weather information at a glance, so I built this system that:
+
+- Fetches real-time weather data from online APIs
+- Processes and converts the data into visual images (temperature graphs, forecast icons, etc.)
+- Sends these images wirelessly to an ESP32 microcontroller
+- Displays the information on an energy-efficient e-ink screen
+- Updates periodically while consuming minimal power
+- Updates the screen automatically after a period of time
 
 <img width="800" height="480" alt="image" src="https://github.com/user-attachments/assets/ef5af0c6-ea3a-494d-b2af-3de6e70b3e6a" />
 
