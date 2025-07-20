@@ -28,15 +28,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Ensure your self-hosted runner is configured
     environment: ${{ github.event.inputs.environment || 'prod' }}
     steps:        
-    # - name: Get Current User
-    #   run: |
-    #     $env:USERNAME
+    - name: Get Current User
+      run: |
+        $env:USERNAME
     
     - name: Checkout Repository
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # Fetches all history and tags for versioning
 
     - name: Set up .NET
       uses: actions/setup-dotnet@v2
@@ -72,29 +74,24 @@ jobs:
         } else {
           Write-Host "ChromeHeadlessShell not found in published output"
         }
-    - name: Get previous tag
-      if: ${{ github.event.inputs.create_release != 'false' }}
-      id: previoustag
-      uses: 'WyriHaximus/github-action-get-previous-tag@v1'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Get next minor version
+    - name: Generate SemVer version
       if: ${{ github.event.inputs.create_release != 'false' }}
       id: semver
-      uses: 'WyriHaximus/github-action-next-semvers@v1'
+      uses: ietf-tools/semver-action@v1
       with:
-        version: ${{ steps.previoustag.outputs.tag }}
-        
-    - name: Create Release
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: master
+        patchAll: true  # Always increment patch number
+
+    - name: Create GitHub Release
       if: ${{ github.event.inputs.create_release != 'false' }}
-      id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ steps.semver.outputs.patch }}
-        release_name: Release ${{ steps.semver.outputs.patch }}
+        tag_name: ${{ steps.semver.outputs.next }}
+        release_name: Release ${{ steps.semver.outputs.next }}
         draft: false
         prerelease: false
       
