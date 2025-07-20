@@ -81,11 +81,13 @@ jobs:
       uses: ietf-tools/semver-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        branch: master
-        patchAll: true  # Always increment patch number
+        branch: master            # ← change to "main" if that's your default
+        patchAll: true
+        # fallbackTag: v0.0.1     # ← optionally bootstrap from an existing tag
 
     - name: Create GitHub Release
       if: ${{ github.event.inputs.create_release != 'false' }}
+      id: create_release         # ← this is required
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -94,21 +96,24 @@ jobs:
         release_name: Release ${{ steps.semver.outputs.next }}
         draft: false
         prerelease: false
-        
-    - name: Zip the build for github release
+
+    - name: Zip the build for GitHub Release
       if: ${{ github.event.inputs.create_release != 'false' }}
-      run: Compress-Archive -Path './output/*' -DestinationPath './output/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip' -CompressionLevel Optimal -Force
+      run: |
+        Compress-Archive \
+          -Path './output/*' \
+          -DestinationPath "./output/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip" \
+          -CompressionLevel Optimal -Force
 
     - name: Upload Release Asset
       if: ${{ github.event.inputs.create_release != 'false' }}
-      id: upload-release-asset 
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ steps.create_release.outputs.upload_url }}    # ← now available
         asset_path: ./output/HomeScreen_Build_${{ steps.semver.outputs.next }}.zip
-        asset_name: HomeScreen_Build_${{steps.semver.outputs.patch}}.zip
+        asset_name: HomeScreen_Build_${{ steps.semver.outputs.next }}.zip
         asset_content_type: application/zip
       
     - name: Generate appsettings.json
