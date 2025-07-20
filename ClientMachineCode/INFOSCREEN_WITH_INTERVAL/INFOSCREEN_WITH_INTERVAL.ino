@@ -7,12 +7,12 @@
 #include <ArduinoJson.h>
 #include <JPEGDEC.h>
 
-// WiFi credentials (only 2.4ghz)
+// WiFi credentials
 const char* ssid = "x";
 const char* password = "x";
 
 // API endpoints
-const char* connectionInformation = "http://x:5000/home/configuration";
+const char* connectionInformation = "http://x/home/configuration";
 
 // These will be updated from the connection information
 String imageUrl = ""; // Will be populated from JSON
@@ -240,12 +240,6 @@ void setup() {
   // Initialize the Paint library with the buffers
   Paint_NewImage(BlackImage, EPD_WIDTH, EPD_HEIGHT, 0, WHITE);
   Paint_NewImage(RYImage, EPD_WIDTH, EPD_HEIGHT, 0, WHITE);
-  
-  // Clear both buffers to WHITE using Paint library
-  Paint_SelectImage(BlackImage);
-  Paint_Clear(WHITE);
-  Paint_SelectImage(RYImage);
-  Paint_Clear(WHITE);
   
   Serial.println("Buffers allocated and cleared");
 
