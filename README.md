@@ -128,4 +128,4 @@ Install following libraries (if more is needed search for them and install them 
 * GUI_Paint
 * JPEGDEC
 
-You need the Waveshare examples installed since it uses code from them. See above link to find the download.
+You need the Waveshare examples installed since it uses code from them download them here [Download](https://files.waveshare.com/upload/5/50/E-Paper_ESP32_Driver_Board_Code.7z) or check above link.
