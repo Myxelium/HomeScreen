@@ -117,7 +117,7 @@ jobs:
       run: |
         Import-Module WebAdministration
         $appPoolName = "${{ vars.IIS_APP_POOL_NAME }}" -or "HomeApi"
-        Write-Host "Restarting application pool: $appPoolName"
+        Write-Host "Restarting application pool: $appPoolName :)"
         
         # Check if app pool exists
         if (Test-Path "IIS:\AppPools\$appPoolName") {
