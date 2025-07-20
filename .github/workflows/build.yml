@@ -79,6 +79,7 @@ jobs:
   deploy:
     runs-on: self-hosted  # Ensure your self-hosted runner is configured
     needs: build
+    environment: 'prod'
 
     steps:
     - name: Download .NET Artifacts
@@ -94,3 +95,19 @@ jobs:
     - name: Copy .NET Publish Files to IIS Server
       run: |
         xcopy ".\output\dotnet\*" "C:\inetpub\applications\HomeApi" /s /i /y
+        
+    - name: Restart IIS Application Pool
+      run: |
+        Import-Module WebAdministration
+        $appPoolName = "${{ vars.IIS_APP_POOL_NAME }}" -or "HomeApi"
+        Write-Host "Restarting application pool: $appPoolName"
+        
+        # Check if app pool exists
+        if (Test-Path "IIS:\AppPools\$appPoolName") {
+          Restart-WebAppPool -Name $appPoolName
+          Write-Host "Application pool restarted successfully"
+        } else {
+          Write-Host "Warning: Application pool '$appPoolName' not found. Using IISReset instead."
+          iisreset /restart
+          Write-Host "IIS restarted successfully"
+        }
