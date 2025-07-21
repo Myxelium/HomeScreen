@@ -20,6 +20,10 @@ I wanted a low-power way to see weather information at a glance, so I built this
 
 <img width="800" height="480" alt="image" src="https://github.com/user-attachments/assets/ef5af0c6-ea3a-494d-b2af-3de6e70b3e6a" />
 
+# How do I get to use this without programming knowledge?
+Check in the wiki for the guide how to get everything working!
+### 😺 [Wiki Get Started Guide](https://github.com/Myxelium/Wireless_Eink_HomeScreen/wiki/Guide:-Landing-page)
+
 ## Git Notes
 All commits has to follow this [Conventional Commits style](https://www.conventionalcommits.org/) to pass the pipeline.
 ## Features 😺
