@@ -22,7 +22,7 @@ I wanted a low-power way to see weather information at a glance, so I built this
 
 # How do I get to use this without programming knowledge?
 Check in the wiki for the guide how to get everything working!
-### 😺 [Wiki Get Started Guide](https://github.com/Myxelium/Wireless_Eink_HomeScreen/wiki/Guide:-Landing-page)
+### 😺 [Wiki Get Started Guide](https://github.com/Myxelium/Wireless_Eink_HomeScreen/wiki/)
 
 ## Git Notes
 All commits has to follow this [Conventional Commits style](https://www.conventionalcommits.org/) to pass the pipeline.
