@@ -1,4 +1,5 @@
 namespace HomeApi.Models.Response;
+
 public class TrafikLabsApiResponse
 {
     public List<Departure> Departure { get; set; }
